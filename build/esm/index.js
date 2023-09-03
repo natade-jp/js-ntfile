@@ -288,4 +288,4 @@ class NTFile {
 	}
 }
 
-module.exports = NTFile;
+export { NTFile as default };
