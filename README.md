@@ -10,6 +10,10 @@
 npm install --save-dev ntfile
 ```
 
+# Doc
+
+https://natade-jp.github.io/js-ntfile/
+
 # Exsample
 
 ## save
@@ -32,4 +36,3 @@ console.log(NTFile.loadTextFile("readme.txt",  "test"));
 import NTFile from "ntfile";
 NTFile.exec("npx jest");
 ```
-
