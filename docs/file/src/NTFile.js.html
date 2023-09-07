@@ -30,7 +30,7 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/NTFile.js~NTFile.html">NTFile</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-NTFindFile">NTFindFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-NTFilterObject">NTFilterObject</a></span></span></li>
 </ul>
 </div>
 </nav>
@@ -201,76 +201,87 @@ export default class NTFile {
 	}
 
 	/**
-	 * &#x8272;&#x306E;&#x578B;&#x60C5;&#x5831;
-	 * @typedef {Object} NTFindFile
-	 * @property {string} source
+	 * &#x8FFD;&#x52A0;&#x6761;&#x4EF6;
+	 * @typedef {Object} NTFilterObject
 	 * @property {Array&lt;RegExp|string&gt;} [includes]
 	 * @property {Array&lt;RegExp|string&gt;} [excludes]
 	 */
 
 	/**
 	 * &#x6307;&#x5B9A;&#x3057;&#x305F;&#x30C7;&#x30A3;&#x30EC;&#x30AF;&#x30C8;&#x30EA;&#x53CA;&#x3073;&#x6761;&#x4EF6;&#x4E0B;&#x306E;&#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x306E;&#x30EA;&#x30B9;&#x30C8;&#x3092;&#x4F5C;&#x6210;
-	 * @param {string | NTFindFile} path_or_types
+	 * @param {string} target_directory
+	 * @param {NTFilterObject} [filter]
 	 * @return {Array&lt;string&gt;}
 	 */
-	static createList(path_or_types) {
-		if (typeof path_or_types === &quot;string&quot;) {
-			const dir_path = path_or_types.replace(/[\\/]+$/, &quot;&quot;);
-			const load_list = fs.readdirSync(dir_path);
-			const list = [];
-			for (let i = 0; i &lt; load_list.length; i++) {
-				list[i] = dir_path + &quot;/&quot; + load_list[i];
-			}
-			for (let i = 0; i &lt; list.length; i++) {
-				if (NTFile.isDirectory(list[i])) {
-					const new_list = fs.readdirSync(list[i]);
-					for (let j = 0; j &lt; new_list.length; j++) {
-						/**
-						 * @type {string}
-						 */
-						const add_file = list[i] + &quot;/&quot; + new_list[j];
-						list.push(add_file);
-					}
+	static createList(target_directory, filter) {
+		const dir_path = target_directory.replace(/[\\/]+$/, &quot;&quot;);
+		const load_list = fs.readdirSync(dir_path);
+		const list = [];
+		for (let i = 0; i &lt; load_list.length; i++) {
+			list[i] = dir_path + &quot;/&quot; + load_list[i];
+		}
+		for (let i = 0; i &lt; list.length; i++) {
+			if (NTFile.isDirectory(list[i])) {
+				const new_list = fs.readdirSync(list[i]);
+				for (let j = 0; j &lt; new_list.length; j++) {
+					/**
+					 * @type {string}
+					 */
+					const add_file = list[i] + &quot;/&quot; + new_list[j];
+					list.push(add_file);
 				}
 			}
+		}
+
+		if (filter == undefined) {
 			return list;
-		} else {
-			const types = path_or_types;
-			const filelist = NTFile.createList(types.source);
+		}
 
-			/**
-			 * @type {Array&lt;string&gt;}
-			 */
-			const filtered_list = [];
+		/**
+		 * @type {Array&lt;string&gt;}
+		 */
+		const filtered_list = [];
 
-			for (const i in filelist) {
-				let is_target = false;
-				if (types.includes) {
-					for (const j in types.includes) {
-						if (new RegExp(types.includes[j]).test(filelist[i])) {
+		for (const i in list) {
+			const name = list[i];
+			let is_target = false;
+			if (filter.includes) {
+				for (const j in filter.includes) {
+					const fi = filter.includes[j];
+					if (typeof fi === &quot;string&quot;) {
+						if (name.indexOf(fi) === -1) {
 							is_target = true;
 							break;
 						}
+					} else if (fi.test(name)) {
+						is_target = true;
+						break;
 					}
 				}
-				if (!is_target) {
-					continue;
-				}
-				if (types.excludes) {
-					for (const j in types.excludes) {
-						if (new RegExp(types.excludes[j]).test(filelist[i])) {
+			}
+			if (!is_target) {
+				continue;
+			}
+			if (filter.excludes) {
+				for (const j in filter.excludes) {
+					const fi = filter.excludes[j];
+					if (typeof fi === &quot;string&quot;) {
+						if (name.indexOf(fi) === -1) {
 							is_target = false;
 							break;
 						}
+					} else if (fi.test(name)) {
+						is_target = false;
+						break;
 					}
 				}
-				if (!is_target) {
-					continue;
-				}
-				filtered_list.push(filelist[i]);
 			}
-			return filtered_list;
+			if (!is_target) {
+				continue;
+			}
+			filtered_list.push(name);
 		}
+		return filtered_list;
 	}
 
 	/**

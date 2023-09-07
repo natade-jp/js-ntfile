@@ -294,9 +294,9 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "src/ntfile.js~ntfile.ntfindfile",
-    "typedef/index.html#static-typedef-NTFindFile",
-    "src/NTFile.js~NTFile.NTFindFile",
+    "src/ntfile.js~ntfile.ntfilterobject",
+    "typedef/index.html#static-typedef-NTFilterObject",
+    "src/NTFile.js~NTFile.NTFilterObject",
     "typedef"
   ],
   [

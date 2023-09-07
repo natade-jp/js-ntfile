@@ -1,6 +1,6 @@
 {
 	"name": "ntfile",
-	"version": "0.0.3",
+	"version": "1.0.0",
 	"description": "Library to read/write files.",
 	"keywords": [
 		"file"

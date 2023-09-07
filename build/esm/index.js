@@ -162,76 +162,87 @@ class NTFile {
 	}
 
 	/**
-	 * 色の型情報
-	 * @typedef {Object} NTFindFile
-	 * @property {string} source
+	 * 追加条件
+	 * @typedef {Object} NTFilterObject
 	 * @property {Array<RegExp|string>} [includes]
 	 * @property {Array<RegExp|string>} [excludes]
 	 */
 
 	/**
 	 * 指定したディレクトリ及び条件下のファイルのリストを作成
-	 * @param {string | NTFindFile} path_or_types
+	 * @param {string} target_directory
+	 * @param {NTFilterObject} [filter]
 	 * @return {Array<string>}
 	 */
-	static createList(path_or_types) {
-		if (typeof path_or_types === "string") {
-			const dir_path = path_or_types.replace(/[\\/]+$/, "");
-			const load_list = fs.readdirSync(dir_path);
-			const list = [];
-			for (let i = 0; i < load_list.length; i++) {
-				list[i] = dir_path + "/" + load_list[i];
-			}
-			for (let i = 0; i < list.length; i++) {
-				if (NTFile.isDirectory(list[i])) {
-					const new_list = fs.readdirSync(list[i]);
-					for (let j = 0; j < new_list.length; j++) {
-						/**
-						 * @type {string}
-						 */
-						const add_file = list[i] + "/" + new_list[j];
-						list.push(add_file);
-					}
+	static createList(target_directory, filter) {
+		const dir_path = target_directory.replace(/[\\/]+$/, "");
+		const load_list = fs.readdirSync(dir_path);
+		const list = [];
+		for (let i = 0; i < load_list.length; i++) {
+			list[i] = dir_path + "/" + load_list[i];
+		}
+		for (let i = 0; i < list.length; i++) {
+			if (NTFile.isDirectory(list[i])) {
+				const new_list = fs.readdirSync(list[i]);
+				for (let j = 0; j < new_list.length; j++) {
+					/**
+					 * @type {string}
+					 */
+					const add_file = list[i] + "/" + new_list[j];
+					list.push(add_file);
 				}
 			}
+		}
+
+		if (filter == undefined) {
 			return list;
-		} else {
-			const types = path_or_types;
-			const filelist = NTFile.createList(types.source);
+		}
 
-			/**
-			 * @type {Array<string>}
-			 */
-			const filtered_list = [];
+		/**
+		 * @type {Array<string>}
+		 */
+		const filtered_list = [];
 
-			for (const i in filelist) {
-				let is_target = false;
-				if (types.includes) {
-					for (const j in types.includes) {
-						if (new RegExp(types.includes[j]).test(filelist[i])) {
+		for (const i in list) {
+			const name = list[i];
+			let is_target = false;
+			if (filter.includes) {
+				for (const j in filter.includes) {
+					const fi = filter.includes[j];
+					if (typeof fi === "string") {
+						if (name.indexOf(fi) === -1) {
 							is_target = true;
 							break;
 						}
+					} else if (fi.test(name)) {
+						is_target = true;
+						break;
 					}
 				}
-				if (!is_target) {
-					continue;
-				}
-				if (types.excludes) {
-					for (const j in types.excludes) {
-						if (new RegExp(types.excludes[j]).test(filelist[i])) {
+			}
+			if (!is_target) {
+				continue;
+			}
+			if (filter.excludes) {
+				for (const j in filter.excludes) {
+					const fi = filter.excludes[j];
+					if (typeof fi === "string") {
+						if (name.indexOf(fi) === -1) {
 							is_target = false;
 							break;
 						}
+					} else if (fi.test(name)) {
+						is_target = false;
+						break;
 					}
 				}
-				if (!is_target) {
-					continue;
-				}
-				filtered_list.push(filelist[i]);
 			}
-			return filtered_list;
+			if (!is_target) {
+				continue;
+			}
+			filtered_list.push(name);
 		}
+		return filtered_list;
 	}
 
 	/**

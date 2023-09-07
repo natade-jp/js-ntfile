@@ -25,6 +25,9 @@ test("NTFile.saveTextFile", () => {
 	expect(NTFile.loadTextFile(td + "/test.txt")).toBe("test");
 	NTFile.deleteFile(td + "/test.txt");
 	NTFile.deleteDirectory(td);
+	expect(NTFile.isExist(td)).toBe(false);
+	expect(NTFile.isFile(td)).toBe(false);
+	expect(NTFile.isDirectory(td)).toBe(false);
 });
 
 test("NTFile.saveTextFileWithBOM", () => {
@@ -42,10 +45,19 @@ test("NTFile.createList", () => {
 	expect(path1.length).toBe(2);
 	expect(path1[0]).toBe(td + "/test1.doc");
 	expect(path1[1]).toBe(td + "/test2.xls");
-	const path2 = NTFile.createList({ source: td, includes: [/.doc$/] });
+	const path2 = NTFile.createList(td, { includes: [/.doc$/] });
 	expect(path2.length).toBe(1);
 	expect(path2[0]).toBe(td + "/test1.doc");
-	const path3 = NTFile.createList({ source: td, includes: [/.doc$/], excludes: [/.doc$/] });
+	const path3 = NTFile.createList(td, { includes: [/.doc$/], excludes: [/.doc$/] });
 	expect(path3.length).toBe(0);
+	NTFile.deleteDirectory(td);
+});
+
+test("NTFile.getEnvironmentFile", () => {
+	NTFile.makeDirectory(td);
+	NTFile.saveTextFile(td + "/env.sh", "name=test1\ntext = test2");
+	const env = NTFile.getEnvironmentFile(td + "/env.sh");
+	expect(env["name"]).toBe("test1");
+	expect(env["text"]).toBe("test2");
 	NTFile.deleteDirectory(td);
 });
