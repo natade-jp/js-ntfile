@@ -160,8 +160,16 @@ NTFile.makeDirectory = function makeDirectory (path) {
 };
 
 /**
+	 * 色の型情報
+	 * @typedef {Object} NTFindFile
+	 * @property {string} source
+	 * @property {Array<RegExp|string>} [includes]
+	 * @property {Array<RegExp|string>} [excludes]
+	 */
+
+/**
 	 * 指定したディレクトリ及び条件下のファイルのリストを作成
-	 * @param {string | {source : string, includes : Array<string>, excludes : Array<string>}} path_or_types
+	 * @param {string | NTFindFile} path_or_types
 	 * @return {Array<string>}
 	 */
 NTFile.createList = function createList (path_or_types) {

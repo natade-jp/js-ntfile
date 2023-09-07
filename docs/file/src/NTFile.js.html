@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/NTFile.js | ntfile</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Library to read/write files."><meta property="twitter:card" content="summary"><meta property="twitter:title" content="ntfile"><meta property="twitter:description" content="Library to read/write files."></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/natade-jp/js-ntfile"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/NTFile.js~NTFile.html">NTFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-NTFindFile">NTFindFile</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/NTFile.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/**
+ * NTFile.js
+ * Copyright 2013-2023 natade &lt; https://github.com/natade-jp &gt;
+ *
+ * The MIT license.
+ * https://opensource.org/licenses/MIT
+ */
+
+//@ts-check
+
+import fs from &quot;fs&quot;;
+import child_process from &quot;child_process&quot;;
+
+/**
+ * &#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x30AF;&#x30E9;&#x30B9;
+ */
+export default class NTFile {
+	/**
+	 * UTF-8 &#x3067;&#x30C6;&#x30AD;&#x30B9;&#x30C8;&#x3092;&#x66F8;&#x304D;&#x8FBC;&#x3080;
+	 * @param {string} path
+	 * @param {string} text
+	 */
+	static saveTextFile(path, text) {
+		fs.writeFileSync(path, text, &quot;utf-8&quot;);
+	}
+
+	/**
+	 * UTF-8 with BOM &#x3067;&#x30C6;&#x30AD;&#x30B9;&#x30C8;&#x3092;&#x66F8;&#x304D;&#x8FBC;&#x3080;
+	 * @param {string} path
+	 * @param {string} text
+	 */
+	static saveTextFileWithBOM(path, text) {
+		if (text.length &gt; 0 &amp;&amp; text.charAt(0) !== &quot;\uFEFF&quot;) {
+			fs.writeFileSync(path, &quot;\uFEFF&quot; + text, &quot;utf-8&quot;);
+		} else {
+			fs.writeFileSync(path, text, &quot;utf-8&quot;);
+		}
+	}
+
+	/**
+	 * BOM&#x3042;&#x308A;&#xFF0F;&#x306A;&#x3057;&#x306B;&#x95A2;&#x308F;&#x3089;&#x305A;&#x3001;UTF-8&#x306E;&#x30C6;&#x30AD;&#x30B9;&#x30C8;&#x3092;&#x8AAD;&#x307F;&#x8FBC;&#x3080;
+	 * @param {string} path
+	 * @returns {string} &#x30C6;&#x30AD;&#x30B9;&#x30C8;&#x30C7;&#x30FC;&#x30BF;
+	 */
+	static loadTextFile(path) {
+		const text = fs.readFileSync(path, &quot;utf-8&quot;);
+		if (text.length &gt; 0 &amp;&amp; text.charAt(0) === &quot;\uFEFF&quot;) {
+			return text.substring(1);
+		} else {
+			return text;
+		}
+	}
+
+	/**
+	 * &#x30D0;&#x30A4;&#x30CA;&#x30EA;&#x30C7;&#x30FC;&#x30BF;&#x3092;&#x66F8;&#x304D;&#x8FBC;&#x3080;
+	 * @param {string} path
+	 * @param {number[]} binary
+	 */
+	static saveBinaryFile(path, binary) {
+		const buffer = new Uint8Array(binary.length);
+		for (let i = 0; i &lt; buffer.length; i++) {
+			buffer[i] = binary[i];
+		}
+		fs.writeFileSync(path, buffer);
+	}
+
+	/**
+	 * &#x30D0;&#x30A4;&#x30CA;&#x30EA;&#x30C7;&#x30FC;&#x30BF;&#x3092;&#x8AAD;&#x307F;&#x8FBC;&#x3080;
+	 * @param {string} path
+	 * @returns {number[]} &#x30D0;&#x30A4;&#x30CA;&#x30EA;&#x30C7;&#x30FC;&#x30BF;
+	 */
+	static loadBinaryFile(path) {
+		const buffer = fs.readFileSync(path);
+		const binary = new Array(buffer.length);
+		for (let i = 0; i &lt; buffer.length; i++) {
+			binary[i] = buffer.readUInt8(i);
+		}
+		return binary;
+	}
+
+	/**
+	 * &#x5B9F;&#x884C;&#x3059;&#x308B;
+	 * @param {string} command
+	 */
+	static exec(command) {
+		const execSync = child_process.execSync;
+		execSync(command);
+	}
+
+	/**
+	 * &#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x304C;&#x5B58;&#x5728;&#x3059;&#x308B;&#x304B;&#x8ABF;&#x3079;&#x308B;
+	 * @param {string} path
+	 * @return {boolean}
+	 */
+	static isExist(path) {
+		try {
+			fs.statSync(path);
+			return true;
+		} catch (error) {
+			if (error.code === &quot;ENOENT&quot;) {
+				return false;
+			} else {
+				console.log(error);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * &#x30C7;&#x30A3;&#x30EC;&#x30AF;&#x30C8;&#x30EA;&#x304B;&#x3069;&#x3046;&#x304B;&#x5224;&#x5B9A;&#x3059;&#x308B;
+	 * @param {string} path
+	 * @return {boolean}
+	 */
+	static isFile(path) {
+		if (!NTFile.isExist(path)) {
+			return false;
+		}
+		return fs.statSync(path).isFile();
+	}
+
+	/**
+	 * &#x30C7;&#x30A3;&#x30EC;&#x30AF;&#x30C8;&#x30EA;&#x304B;&#x3069;&#x3046;&#x304B;&#x5224;&#x5B9A;&#x3059;&#x308B;
+	 * @param {string} path
+	 * @return {boolean}
+	 */
+	static isDirectory(path) {
+		if (!NTFile.isExist(path)) {
+			return false;
+		}
+		return fs.statSync(path).isDirectory();
+	}
+
+	/**
+	 * &#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x3092;&#x30B3;&#x30D4;&#x30FC;&#x3059;&#x308B;
+	 * @param {string} from
+	 * @param {string} to
+	 */
+	static copy(from, to) {
+		const bin = fs.readFileSync(from);
+		fs.writeFileSync(to, bin);
+	}
+
+	/**
+	 * &#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x3092;&#x524A;&#x9664;&#x3059;&#x308B;
+	 * @param {string} path
+	 */
+	static deleteFile(path) {
+		if (!NTFile.isExist(path)) {
+			return;
+		}
+		fs.unlinkSync(path);
+	}
+
+	/**
+	 * &#x30D5;&#x30A9;&#x30EB;&#x30C0;&#x3092;&#x4F5C;&#x6210;&#x3059;&#x308B;
+	 * @param {string} path
+	 */
+	static makeDirectory(path) {
+		if (NTFile.isExist(path)) {
+			return;
+		}
+		fs.mkdirSync(path);
+	}
+
+	/**
+	 * &#x8272;&#x306E;&#x578B;&#x60C5;&#x5831;
+	 * @typedef {Object} NTFindFile
+	 * @property {string} source
+	 * @property {Array&lt;RegExp|string&gt;} [includes]
+	 * @property {Array&lt;RegExp|string&gt;} [excludes]
+	 */
+
+	/**
+	 * &#x6307;&#x5B9A;&#x3057;&#x305F;&#x30C7;&#x30A3;&#x30EC;&#x30AF;&#x30C8;&#x30EA;&#x53CA;&#x3073;&#x6761;&#x4EF6;&#x4E0B;&#x306E;&#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x306E;&#x30EA;&#x30B9;&#x30C8;&#x3092;&#x4F5C;&#x6210;
+	 * @param {string | NTFindFile} path_or_types
+	 * @return {Array&lt;string&gt;}
+	 */
+	static createList(path_or_types) {
+		if (typeof path_or_types === &quot;string&quot;) {
+			const dir_path = path_or_types.replace(/[\\/]+$/, &quot;&quot;);
+			const load_list = fs.readdirSync(dir_path);
+			const list = [];
+			for (let i = 0; i &lt; load_list.length; i++) {
+				list[i] = dir_path + &quot;/&quot; + load_list[i];
+			}
+			for (let i = 0; i &lt; list.length; i++) {
+				if (NTFile.isDirectory(list[i])) {
+					const new_list = fs.readdirSync(list[i]);
+					for (let j = 0; j &lt; new_list.length; j++) {
+						/**
+						 * @type {string}
+						 */
+						const add_file = list[i] + &quot;/&quot; + new_list[j];
+						list.push(add_file);
+					}
+				}
+			}
+			return list;
+		} else {
+			const types = path_or_types;
+			const filelist = NTFile.createList(types.source);
+
+			/**
+			 * @type {Array&lt;string&gt;}
+			 */
+			const filtered_list = [];
+
+			for (const i in filelist) {
+				let is_target = false;
+				if (types.includes) {
+					for (const j in types.includes) {
+						if (new RegExp(types.includes[j]).test(filelist[i])) {
+							is_target = true;
+							break;
+						}
+					}
+				}
+				if (!is_target) {
+					continue;
+				}
+				if (types.excludes) {
+					for (const j in types.excludes) {
+						if (new RegExp(types.excludes[j]).test(filelist[i])) {
+							is_target = false;
+							break;
+						}
+					}
+				}
+				if (!is_target) {
+					continue;
+				}
+				filtered_list.push(filelist[i]);
+			}
+			return filtered_list;
+		}
+	}
+
+	/**
+	 * &#x30D5;&#x30A9;&#x30EB;&#x30C0;&#x3092;&#x524A;&#x9664;&#x3059;&#x308B;
+	 * @param {string} path
+	 */
+	static deleteDirectory(path) {
+		if (!NTFile.isDirectory(path)) {
+			return;
+		}
+		{
+			// &#x307E;&#x305A;&#x306F;&#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x306E;&#x307F;&#x3092;&#x5168;&#x6D88;&#x53BB;
+			const list = NTFile.createList(path);
+			for (let i = 0; i &lt; list.length; i++) {
+				if (NTFile.isFile(list[i])) {
+					NTFile.deleteFile(list[i]);
+				}
+			}
+		}
+		// &#x30D5;&#x30A9;&#x30EB;&#x30C0;&#x306E;&#x4E2D;&#x8EAB;&#x304C;0&#x306E;&#x30D5;&#x30A9;&#x30EB;&#x30C0;&#x3092;&#x7E70;&#x308A;&#x8FD4;&#x3057;&#x524A;&#x9664;
+		for (let i = 0; i &lt; 10; i++) {
+			const list = NTFile.createList(path);
+			for (let j = 0; j &lt; list.length; j++) {
+				if (NTFile.createList(list[j]).length === 0) {
+					fs.rmdirSync(list[j]);
+				}
+			}
+		}
+		// &#x6700;&#x5F8C;&#x306B;&#x76EE;&#x7684;&#x306E;&#x30D5;&#x30A9;&#x30EB;&#x30C0;&#x3092;&#x524A;&#x9664;
+		fs.rmdirSync(path);
+	}
+
+	/**
+	 * &#x74B0;&#x5883;&#x30D5;&#x30A1;&#x30A4;&#x30EB;&#x306E;&#x5B9A;&#x7FA9;&#x5024;&#x3092;JSON&#x3067;&#x53D6;&#x5F97;&#x3059;&#x308B;
+	 * - XX = YY &#x3068;&#x3044;&#x3063;&#x305F;&#x30C7;&#x30FC;&#x30BF;&#x304C;&#x8A18;&#x8F09;&#x3055;&#x308C;&#x305F;&#x6587;&#x7AE0;&#x3092;&#x8AAD;&#x307F;&#x8FBC;&#x3080;
+	 * @param {String} path
+	 * @return {Object&lt;string, string&gt;}
+	 */
+	static getEnvironmentFile(path) {
+		const text = NTFile.loadTextFile(path).split(/\r?\n/g);
+		/**
+		 * @type Object&lt;string, string&gt;
+		 */
+		const output = {};
+		for (let i = 0; i &lt; text.length; i++) {
+			let line = text[i];
+			line = line.replace(/#.*/, &quot;&quot;).trim();
+			if (line.length === 0) {
+				continue;
+			}
+			if (!/=/.test(line)) {
+				continue;
+			}
+			const name = line.replace(/=.*/, &quot;&quot;).trim();
+			let data = line.replace(/[^=]+=/, &quot;&quot;).trim();
+			if (/^&quot;.*&quot;$/.test(data)) {
+				data = data.replace(/^&quot;(.*)&quot;$/, &quot;$1&quot;);
+			}
+			output[name] = data;
+		}
+		return output;
+	}
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

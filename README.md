@@ -1,4 +1,5 @@
-# NTFormat
+# NTFile
+[![ESDoc coverage badge](https://natade-jp.github.io/js-ntfile/badge.svg)](https://natade-jp.github.io/js-ntfile/)
 ![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)
 
 - Node.js用のファイルの読み書きライブラリ
@@ -10,29 +11,32 @@
 npm install --save-dev ntfile
 ```
 
-# Doc
+# Use
+
+```javascript
+import NTFile from "ntfile";
+```
+
+# Docs
 
 https://natade-jp.github.io/js-ntfile/
 
-# Exsample
+# Example
 
 ## save
 
 ```javascript
-import NTFile from "ntfile";
 NTFile.saveTextFile("readme.txt",  "test");
 ```
 
 ## exec
 
 ```javascript
-import NTFile from "ntfile";
 console.log(NTFile.loadTextFile("readme.txt",  "test"));
 ```
 
 ## exec
 
 ```javascript
-import NTFile from "ntfile";
 NTFile.exec("npx jest");
 ```
