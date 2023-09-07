@@ -29,7 +29,7 @@ https://natade-jp.github.io/js-ntfile/
 NTFile.saveTextFile("readme.txt",  "test");
 ```
 
-## exec
+## load
 
 ```javascript
 console.log(NTFile.loadTextFile("readme.txt",  "test"));
